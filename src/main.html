@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>系统管理</title>
+    <link rel="stylesheet" href="css/all.min.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/component/myComponent.css">
+    <link rel="stylesheet" href="css/main/main.css" />
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="menu_container" :style="{ width : menuContainerStyle.menuWidth }">
+        <div class="menu_title" :style="{ backgroundColor : theme.titleBackgroundColor }">
+            <template v-if="logoUrl != ''">
+                <img class="title_logo" :src="logoUrl">
+            </template>
+            <transition name="menu-title">
+                <h1 :style="{ color : menuTitle.color }" v-if="menuContainerStyle.isShowTitle">{{menuTitle.name}}</h1>
+            </transition>
+            <span class="cutting_line"></span>
+        </div>
+        <!--   menu  -->
+        <div class="menu_span" :style="{ backgroundColor : theme.menuBackgroundColor }">
+            <scoll-bar :is-show-vertical="true" :is-show-horizontal="false"
+                       thumb-color="#F5F5F5" active-thumb-color="#DCDCDC" thumb-width="8">
+                <el-menu
+                        :text-color="theme.menuTextColor"
+                        :background-color="theme.menuBackgroundColor"
+                        :active-text-color="theme.menuActiveTextColor"
+                        :collapse-transition="false"
+                        :collapse="isCollapse"
+                        :default-active="defaultActiveMenu"
+                        :unique-opened="false"
+                        class="el_menu_list"
+                        @select="btSelectMenu">
+                    <template v-for="item in menuList">
+                        <template v-if="item.childList.length > 0">
+                            <el-submenu :index="item.menuId">
+                                <template slot="title">
+                                    <i :class="item.icon"></i>
+                                    <span slot="title">{{item.name}}</span>
+                                </template>
+                                <template v-for="childItem in item.childList">
+                                    <el-menu-item-group>
+                                        <el-menu-item :index="childItem.menuId">{{childItem.name}}</el-menu-item>
+                                    </el-menu-item-group>
+                                </template>
+                            </el-submenu>
+                        </template>
+                        <template v-else>
+                            <el-menu-item :index="item.menuId">
+                                <i :class="item.icon"></i>
+                                <span slot="title">{{item.name}}</span>
+                            </el-menu-item>
+                        </template>
+                    </template>
+                </el-menu>
+            </scoll-bar>
+        </div>
+    </div>
+
+    <div class="main_container" :style="{ width : menuContainerStyle.mainWidth }">
+        <div class="main_top">
+            <div class="main_top_left" :style="{ color : theme.btChangeMenuSpan }">
+                <div class="bt_change_menu" @click="changeMenuPanel">
+                    <i :class="isMenuFold"></i>
+                </div>
+                <div>
+                    <div class="my_crumb_span">
+                        <div :class="[{my_crumb_item:true},{crumb_home_page:isCrumbHomePage}]" @click="toHomePage">首页</div>
+                        <template v-for="menuItem in selectMenu.menuNameList">
+                            <template v-if="menuItem.menuId != '1'">
+                                <transition name="animation_crumb">
+                                    <div class="crumb_item_span">
+                                        <span class="crumb_separator">/</span>
+                                        <div class="my_crumb_item">{{menuItem.menuName}}</div>
+                                    </div>
+                                </transition>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main_top_right">
+                <div class="main_top_bt top_search_span">
+                    <i class="fas fa-search" @click="btSearch"></i>
+                    <transition name="search_input">
+                        <div class="search_input_span" v-if="topSearchIsShow">
+                            <el-popover placement="bottom" trigger="manual" width="100"
+                            v-model="searchInputPopoverShow">
+                                <ul class="search_menu_span">
+                                    <template v-for="item in searchMenuList">
+                                        <li @click="btSelectMenu(item.index,item.indexPath)">
+                                            <template v-for="(nameItem,index) in item.name">
+                                                <span class="search_menu_span_symbol" v-if="index > 0">/</span>
+                                                <span>{{nameItem}}</span>
+                                            </template>
+                                        </li>
+                                    </template>
+                                </ul>
+                                <input slot="reference" type="text" placeholder="Search" v-model="menuSearchText"
+                                       @input="menuSearch" @blur="outSearchInput">
+                            </el-popover>
+                        </div>
+                    </transition>
+                </div>
+                <div class="main_top_bt" @click="btFullWindow">
+                    <i :class="isFullWindow"></i>
+                </div>
+                <el-popover
+                        placement="top"
+                        width="80px"
+                        trigger="click"
+                        popper-class="user_msg_span">
+                    <div class="user_msg_popover">
+                        <div class="user_msg_list">
+                            <div class="user_msg_item">个人中心</div>
+                            <div class="user_msg_item">系统设置</div>
+                        </div>
+                        <div class="user_msg_item login_out" @click="loginOut">退出登录</div>
+                    </div>
+                    <div class="head_span" slot="reference">
+                        <img :src="avatarUrl">
+                    </div>
+                </el-popover>
+            </div>
+        </div>
+        <div class="menu_tab_span">
+            <div class="tag_span">
+                <template v-for="item in menuTagList">
+                    <el-tag class="tag_item"
+                            :effect="item.effect" :closable="item.closable"
+                    @click="btSelectMenu(item.index,item.indexPath)"
+                    @close="closeMenuTag(item)">
+                        {{item.label}}
+                    </el-tag>
+                </template>
+            </div>
+        </div>
+        <div class="show_main">
+            <transition :name="viewTransitionName">
+                <router-view></router-view>
+            </transition>
+        </div>
+    </div>
+</div>
+</body>
+<script src="shared.js"></script>
+<script src="index.js"></script>
+<script src="js/main/main.js"></script>
+</html>

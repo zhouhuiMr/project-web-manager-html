@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员登录</title>
+    <link rel="stylesheet" href="css/all.min.css" />
+    <link rel="stylesheet" href="css/login/login.css" />
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="center_span">
+        <div class="left_span">
+            <img src="resources/login/login.png">
+        </div>
+        <div class="right_span">
+            <div class="login_span">
+                <div class="login_form_span">
+                    <div class="input_span user_name_span">
+                        <div class="icon_tip_span" >
+                            <div class="icon_span">
+                                <i class="fas fa-user fa-2x fa-fw"></i>
+                            </div>
+                            <label class="label_tips" v-bind:class="userNameSize">用户名</label>
+                            <input type="text" v-model="loginForm.userName" @focus="selectInput(0)" @blur="blurInput(0)">
+                        </div>
+                        <span class="spin_line" v-bind:class="userNameLine"></span>
+                    </div>
+                    <div class="input_span password_span">
+                        <div class="icon_tip_span">
+                            <div class="icon_span">
+                                <i class="fas fa-lock fa-2x fa-fw"></i>
+                            </div>
+                            <label class="label_tips" v-bind:class="passwordSize">密码</label>
+                            <input type="password" v-model="loginForm.password" @focus="selectInput(1)" @blur="blurInput(1)">
+                        </div>
+                        <span class="spin_line" v-bind:class="passwordLine"></span>
+                    </div>
+                    <div class="input_span authcode_span">
+                        <div class="authcode_input_span">
+                            <label class="label_tips" v-bind:class="authCodeSize">验证码</label>
+                            <input type="text" maxlength="4" v-model="loginForm.authCode" @focus="selectInput(2)" @blur="blurInput(2)">
+                            <span class="spin_line" v-bind:class="authCodeLine"></span>
+                        </div>
+                        <div class="authcode_image_span">
+                            <img :src="authCodeUrl" @click="refreshAuthCode">
+                        </div>
+                    </div>
+                    <p class="error_span">{{errorMsg}}</p>
+                    <div class="button_span" @click="userLogin"
+                         v-loading.fullscreen.lock="fullscreenLoading">
+                        登录
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="shared.js"></script>
+<script src="index.js"></script>
+<script src="js/login/login.js"></script>
+</html>
