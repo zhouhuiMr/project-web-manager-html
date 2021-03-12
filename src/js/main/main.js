@@ -2,10 +2,10 @@ import _ from 'lodash';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import ElementUI from 'element-ui';
-import NProgress from 'nprogress'
-import 'nprogress/nprogress.css'
-import ScollBar from '../../component/scroll-bar.vue'
-import {routes} from '../web-router.js'
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+import ScollBar from '../../component/scroll-bar.vue';
+import {routes} from '../web-router.js';
 
 Vue.use(VueRouter);
 Vue.use(ElementUI);

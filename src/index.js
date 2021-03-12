@@ -3,6 +3,9 @@ const axios = require('axios');
 const qs = require('qs');
 
 window.config = {
+    domain : 'https://www.ilvcode.cn',
+    project : '/web',
+
     // domain : 'http://localhost:8011',
     // project : '/web',
 };

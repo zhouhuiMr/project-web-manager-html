@@ -134,6 +134,7 @@
                             :effect="item.effect" :closable="item.closable"
                     @click="btSelectMenu(item.index,item.indexPath)"
                     @close="closeMenuTag(item)">
+                        <i class="fas fa-circle" v-if="item.isSelect"></i>
                         {{item.label}}
                     </el-tag>
                 </template>

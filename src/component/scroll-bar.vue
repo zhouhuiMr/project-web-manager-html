@@ -324,9 +324,18 @@
      * 否则返回false。
      */
     function compareVerticalSize(obj){
+        let option = {
+            isShowScroll : false,
+            v_scrollBarHeight : 0,
+            v_scrollContentHeight : 0
+        };
+        if(obj.$refs["scrollBarRef"] == null || obj.$refs["scrollContentScrollRef"] == null ){
+            return option;
+        }
+
         let v_scrollBarHeight = obj.$refs["scrollBarRef"].offsetHeight;//最外层容器大小
         let v_scrollContentHeight = obj.$refs["scrollContentScrollRef"].scrollHeight;//内部容器大小
-        let option = {
+        option = {
             isShowScroll : false,
             v_scrollBarHeight : v_scrollBarHeight,
             v_scrollContentHeight : v_scrollContentHeight
@@ -347,9 +356,17 @@
      * 否则返回false。
      */
     function comparehorizontalSize(obj){
+        let option = {
+            isShowScroll : false,
+            v_scrollBarWidth : 0,
+            v_scrollContentWidth : 0
+        };
+        if(obj.$refs["scrollBarRef"] == null || obj.$refs["scrollContentScrollRef"] == null ){
+            return option;
+        }
         let v_scrollBarWidth = obj.$refs["scrollBarRef"].offsetWidth;//最外层容器大小
         let v_scrollContentWidth = obj.$refs["scrollContentScrollRef"].scrollWidth;//内部容器大小
-        let option = {
+        option = {
             isShowScroll : false,
             v_scrollBarWidth : v_scrollBarWidth,
             v_scrollContentWidth : v_scrollContentWidth
