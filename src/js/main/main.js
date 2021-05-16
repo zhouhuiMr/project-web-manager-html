@@ -32,92 +32,10 @@ router.afterEach(() => {
     NProgress.done();
 });
 
-//菜单数据格式
-var menuData = [
-    {
-        menuId : "1",
-        icon : "fas fa-home",
-        name : "首页",
-        url : "/homePage",
-        childList : [
-        ]
-    },{
-        menuId : "2",
-        icon : "fas fa-tools",
-        name : "工具",
-        url : "/bar/bar",
-        childList : [
-            {
-                menuId : "2-1",
-                icon : "",
-                name : "工具1",
-                url : "/foo",
-                childList : [
-                ],
-            },{
-                menuId : "2-2",
-                icon : "",
-                name : "工具2",
-                url : "/bar/bar",
-                childList : [
-                ],
-            },
-            {
-                menuId : "2-3",
-                icon : "",
-                name : "工具3",
-                url : "/bar/bar",
-                childList : [
-                ],
-            },
-            {
-                menuId : "2-4",
-                icon : "",
-                name : "工具4",
-                url : "/foo",
-                childList : [
-                ],
-            },
-            {
-                menuId : "2-5",
-                icon : "",
-                name : "工具5",
-                url : "/foo",
-                childList : [
-                ],
-            },
-        ],
-    },{
-        menuId : "3",
-        icon : "fas fa-feather",
-        name : "测试",
-        url : "/bar/bar",
-        childList : [
-        ]
-    },{
-        menuId : "4",
-        icon : "fas fa-tools",
-        name : "工具",
-        url : "/bar/bar",
-        childList : [
-            {
-                menuId : "4-1",
-                icon : "",
-                name : "工具1",
-                url : "/foo",
-                childList : [
-                ],
-            },{
-                menuId : "4-2",
-                icon : "",
-                name : "工具2",
-                url : "/bar/bar",
-                childList : [
-                ],
-            },
-        ],
-    },
-];
+
+const SELECT_MENU_INDEX = "selectMenuIndex";
+const SELECT_MENU_PATH = "selectMenuPath";
+const MENU_TAG_LIST_NAME = "menuTagList";
 
 window.app= new Vue({
     el : "#app",
@@ -175,10 +93,12 @@ window.app= new Vue({
                 index : "1",
                 indexPath : ["1"],
                 label : "首页",
-                url : "/homePage",
-                closable : false
+                menuUrl : "/homePage",
+                closable : false,
+                tagClassName : "tag_item tag_selected"
             }
         ],
+        language : "zh",
     },
     methods : {
         btSelectMenu : function(index, indexPath){
@@ -198,8 +118,16 @@ window.app= new Vue({
 
             createMenuTag(index, indexPath);
 
-            runRouterTo(app.selectMenu.menuNameList[indexPath.length-1].url);
+            if(this.selectMenu.menuObject.menuType === "0"){
+                //页面内打开其他页面
+                runRouterTo(app.selectMenu.menuNameList[indexPath.length-1].url,app.selectMenu.menuObject.menuId);
+            }else if(this.selectMenu.menuObject.menuType === "1"){
+                //新的页面打开
+                window.open(app.selectMenu.menuNameList[indexPath.length-1].url);
+            }
 
+            //存储选择的菜单
+            saveSelectMenuFromStorage(index,indexPath);
         },
         toHomePage : function(){
             this.btSelectMenu("1","1");
@@ -285,7 +213,14 @@ window.app= new Vue({
             }else{
                 this.topSearchIsShow = true;
             }
+        },
+        changeLanguage : function(lang){
+            this.language = lang;
+            window.language = lang;
         }
+    },
+    created : function(){
+
     },
     computed: {
 
@@ -306,9 +241,15 @@ window.app= new Vue({
  * 执行菜单的跳转
  * @param curRouterTo 当前选择的菜单路径
  */
-function runRouterTo(curRouterTo){
+function runRouterTo(curRouterTo,menuId){
     if(app.preRouterTo != curRouterTo){
-        router.push(curRouterTo);
+        var routerOption = {
+            path : curRouterTo,
+            query : {
+                menuId : menuId
+            }
+        };
+        router.push(routerOption).catch(function(){});
     }
     app.preRouterTo = curRouterTo;
 }
@@ -360,11 +301,11 @@ function getMenuNameListById(indexPath){
     var menuObject = null;
     for(var i=0;i<app.menuList.length;i++){
         var menuItem = app.menuList[i];
-        if(menuItem.menuId == menuId){
+        if(menuItem.index == menuId){
             app.selectMenu.menuNameList.push({
-                menuName : menuItem.name,
+                menuName : menuItem.menuName,
                 menuId : menuId,
-                url : menuItem.url
+                url : menuItem.menuUrl
             });
             curMenu = menuItem;
             menuObject = menuItem;
@@ -373,13 +314,13 @@ function getMenuNameListById(indexPath){
     }
     if(curMenu != null){
         for(var i=1;i<indexPath.length;i++){
-            for(var j=0;j<curMenu.childList.length;j++){
-                var menuItem = curMenu.childList[j];
-                if(indexPath[i] == menuItem.menuId){
+            for(var j=0;j<curMenu.children.length;j++){
+                var menuItem = curMenu.children[j];
+                if(indexPath[i] == menuItem.index){
                     app.selectMenu.menuNameList.push({
-                        menuName : menuItem.name,
-                        menuId : menuItem.menuId,
-                        url : menuItem.url
+                        menuName : menuItem.menuName,
+                        menuId : menuItem.index,
+                        url : menuItem.menuUrl
                     });
                     menuObject = menuItem;
                     break;
@@ -403,6 +344,7 @@ function getMenuNameListById(indexPath){
  *   url : "/foo", 访问地址
  *   closable : false, 是否可关闭
  *   isSelect : false 是否选中
+ *   tagClassName : "tag_item tag_selected" （选中） 或"tag_item tag_unselected"（未选中）
  * }
  * @param index 菜单的唯一标识
  * @param indexPath 选择的菜单
@@ -418,6 +360,7 @@ function createMenuTag(index,indexPath){
         }
         item.effect = "plain";
         item.isSelect = false;
+        item.tagClassName = "tag_item tag_unselected";
     }
     if(isExist){
         if(index == 1){
@@ -425,21 +368,25 @@ function createMenuTag(index,indexPath){
         }
         selectTag.effect = "dark";
         selectTag.isSelect = true;
+        selectTag.tagClassName = "tag_item tag_selected";
     }else{
         var tagItem = {
             effect : "dark",//dark,plain
             index : index,
             indexPath : indexPath,
-            label : app.selectMenu.menuObject.name,
-            url : app.selectMenu.menuObject.url,
+            label : app.selectMenu.menuObject.menuName,
+            menuUrl : app.selectMenu.menuObject.menuUrl,
             closable : true,
-            isSelect : true
+            isSelect : true,
+            tagClassName : "tag_item tag_selected"
         };
         if(index == 1){
             tagItem.closable = true;
         }
         app.menuTagList.push(tagItem);
     }
+    //存储menuTagList
+    saveMenuTagList(app.menuTagList);
 }
 
 /**
@@ -450,34 +397,112 @@ function searchMenuByName(menuName){
     app.searchMenuList = [];
     for(var i=0;i<app.menuList.length;i++){
         var item = app.menuList[i];
-        if(item.name.indexOf(menuName) >= 0){
-            if(item.childList.length == 0){
+        if(item.menuName.indexOf(menuName) >= 0){
+            if(item.children.length == 0){
                 var similarItem = {
-                    name : [item.name],
-                    index : item.menuId,
-                    indexPath : [item.menuId]
+                    name : [item.menuName],
+                    index : item.index,
+                    indexPath : [item.index]
                 };
                 app.searchMenuList.push(similarItem);
                 continue;
             }
         }
-        for(var j=0;j<item.childList.length;j++){
-            var childItem = item.childList[j];
-            if(childItem.name.indexOf(menuName) >= 0){
+        for(var j=0;j<item.children.length;j++){
+            var childItem = item.children[j];
+            if(childItem.menuName.indexOf(menuName) >= 0){
                 var similarItem = {
-                    name : [item.name],
-                    index : childItem.menuId,
-                    indexPath : [item.menuId]
+                    name : [item.menuName],
+                    index : childItem.index,
+                    indexPath : [item.index]
                 };
-                similarItem.name.push(childItem.name);
-                similarItem.indexPath.push(childItem.menuId);
+                similarItem.name.push(childItem.menuName);
+                similarItem.indexPath.push(childItem.index);
                 app.searchMenuList.push(similarItem);
             }
         }
     }
 }
 
-window.setTimeout(function(){
-    app.menuList = menuData;
-    app.btSelectMenu("1","1");
-},1000);
+//获取菜单
+var getMenuUrl = config.domain + config.project + "/action/user/webUserInfo";
+new formRequest(getMenuUrl,{},function(){
+
+},function(data){
+    if(data.code === '0000'){
+        app.menuList = data.data.menuList;
+
+        let menuTagList = getMenuTagList();
+        if(menuTagList != null){
+            app.menuTagList = menuTagList;
+        }
+
+        let menu = getSelectMenuFromStorage();
+        if(menu == null){
+            app.btSelectMenu("1","1");
+        }else{
+            app.btSelectMenu(menu.index,menu.indexPath);
+        }
+    }else{
+        app.$alert('登录异常，请重新登录！', {
+            confirmButtonText: '确定',
+            callback: function(){
+                window.location.href = "./index.html";
+            }
+        });
+    }
+});
+
+/**
+ * 将当前选择的菜单存入seesionStorage
+ * @param index 菜单索引
+ * @param indexPath 菜单的路径
+ */
+function saveSelectMenuFromStorage(index, indexPath){
+    sessionStorage.setItem(SELECT_MENU_INDEX,index);
+    sessionStorage.setItem(SELECT_MENU_PATH,JSON.stringify(indexPath))
+}
+
+/**
+ * 获取存储的菜单的索引和菜单的路径
+ * @returns
+ * {
+ *           "index" : index,
+ *          "indexPath" : indexPath
+ *  }
+ */
+function getSelectMenuFromStorage(){
+    let index = sessionStorage.getItem(SELECT_MENU_INDEX);
+    let indexPath = sessionStorage.getItem(SELECT_MENU_PATH);
+
+    if((index == null || index == "") || (indexPath == null || indexPath == "")){
+        return null;
+    }else{
+        return {
+            "index" : index,
+            "indexPath" : JSON.parse(indexPath)
+        }
+    }
+}
+
+/**
+ * 存储菜单标签的列表
+ * @param menuTagList 当前显示的菜单列表
+ */
+function saveMenuTagList(menuTagList){
+    let strMenuTagList = JSON.stringify(menuTagList);
+    sessionStorage.setItem(MENU_TAG_LIST_NAME,strMenuTagList);
+}
+
+/**
+ * 获取之前存储的菜单标签列表
+ * @returns {*}
+ */
+function getMenuTagList(){
+    let menuTagList = sessionStorage.getItem(MENU_TAG_LIST_NAME);
+    if(menuTagList == null || menuTagList == ""){
+        return null;
+    }
+    return JSON.parse(menuTagList);
+}
+

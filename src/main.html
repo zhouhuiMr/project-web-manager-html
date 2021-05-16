@@ -31,27 +31,27 @@
                         :collapse-transition="false"
                         :collapse="isCollapse"
                         :default-active="defaultActiveMenu"
-                        :unique-opened="false"
+                        :unique-opened="true"
                         class="el_menu_list"
                         @select="btSelectMenu">
                     <template v-for="item in menuList">
-                        <template v-if="item.childList.length > 0">
-                            <el-submenu :index="item.menuId">
+                        <template v-if="item.children.length > 0">
+                            <el-submenu :index="item.index">
                                 <template slot="title">
                                     <i :class="item.icon"></i>
-                                    <span slot="title">{{item.name}}</span>
+                                    <span slot="title">{{item.menuName}}</span>
                                 </template>
-                                <template v-for="childItem in item.childList">
+                                <template v-for="childItem in item.children">
                                     <el-menu-item-group>
-                                        <el-menu-item :index="childItem.menuId">{{childItem.name}}</el-menu-item>
+                                        <el-menu-item :index="childItem.index">{{childItem.menuName}}</el-menu-item>
                                     </el-menu-item-group>
                                 </template>
                             </el-submenu>
                         </template>
                         <template v-else>
-                            <el-menu-item :index="item.menuId">
+                            <el-menu-item :index="item.index">
                                 <i :class="item.icon"></i>
-                                <span slot="title">{{item.name}}</span>
+                                <span slot="title">{{item.menuName}}</span>
                             </el-menu-item>
                         </template>
                     </template>
@@ -109,17 +109,34 @@
                 <div class="main_top_bt" @click="btFullWindow">
                     <i :class="isFullWindow"></i>
                 </div>
+
                 <el-popover
                         placement="top"
                         width="80px"
                         trigger="click"
-                        popper-class="user_msg_span">
-                    <div class="user_msg_popover">
-                        <div class="user_msg_list">
-                            <div class="user_msg_item">个人中心</div>
-                            <div class="user_msg_item">系统设置</div>
+                        popper-class="popover_msg_span">
+                    <div class="msg_popover">
+                        <div class="popover_msg_list">
+                            <div class="popover_msg_item" @click="changeLanguage('zh')">中文</div>
+                            <div class="popover_msg_item" @click="changeLanguage('en')">English</div>
                         </div>
-                        <div class="user_msg_item login_out" @click="loginOut">退出登录</div>
+                    </div>
+                    <div class="main_top_bt" slot="reference">
+                        <i class="fas fa-language"></i>
+                    </div>
+                </el-popover>
+
+                <el-popover
+                        placement="top"
+                        width="80px"
+                        trigger="click"
+                        popper-class="popover_msg_span">
+                    <div class="msg_popover">
+                        <div class="popover_msg_list">
+                            <div class="popover_msg_item">个人中心</div>
+                            <div class="popover_msg_item">系统设置</div>
+                        </div>
+                        <div class="popover_msg_item login_out" @click="loginOut">退出登录</div>
                     </div>
                     <div class="head_span" slot="reference">
                         <img :src="avatarUrl">
@@ -130,10 +147,10 @@
         <div class="menu_tab_span">
             <div class="tag_span">
                 <template v-for="item in menuTagList">
-                    <el-tag class="tag_item"
+                    <el-tag :class="item.tagClassName" type="success"
                             :effect="item.effect" :closable="item.closable"
                     @click="btSelectMenu(item.index,item.indexPath)"
-                    @close="closeMenuTag(item)">
+                    @close="closeMenuTag(item)" size="small">
                         <i class="fas fa-circle" v-if="item.isSelect"></i>
                         {{item.label}}
                     </el-tag>

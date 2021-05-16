@@ -1,6 +1,7 @@
 <template>
     <div class="scrollbar-span" @mouseenter="scrollEnter" @mouseleave="scrollMouseLeave"
-         ref="scrollBarRef" @mousemove="thumbMouseMove" @mouseup="thumbMouseUp">
+         ref="scrollBarRef" @mousemove="thumbMouseMove" @mouseup="thumbMouseUp"
+         :style="scrollStyle">
         <div class="scrollbar-content-span" ref="scrollContentRef" @scroll="scrollWheel"
              :style="scrollSpanStyle">
             <div class="scrollbar-content-scroll" ref="scrollContentScrollRef">
@@ -60,12 +61,18 @@
                 type : Number,
                 default : 10,
             },
+            scrollStyle :{
+                type : Object,
+                default : null //滚动条容器的样式
+            },
         },
         data : function() {
             return {
                 scrollSpanStyle : {
-                    width : "calc(100% + 18px)",
-                    height : "calc(100% + 18px)",
+                    width : "100%",
+                    height : "100%",
+                    paddingRight : "18px",
+                    paddingBottom : "0px",
                     overflowX : "scroll",
                     overflowY : "scroll"
                 },
@@ -210,22 +217,26 @@
 
             //垂直滚动条
             if(this.setShowVertical){
-                this.scrollSpanStyle.width = "calc(100% + 18px)";
+                this.scrollSpanStyle.width = "100%";
                 this.scrollSpanStyle.overflowY = "scroll";
+                this.scrollSpanStyle.paddingRight = "18px";
                 this.setIsVertical = true;
             }else{
                 this.scrollSpanStyle.width = "100%";
                 this.scrollSpanStyle.overflowY = "hidden";
+                this.scrollSpanStyle.paddingRight = "0px";
                 this.setIsVertical = false;
             }
             //水平滚动条
             if(this.setShowHorizontal){
-                this.scrollSpanStyle.height = "calc(100% + 18px)";
+                this.scrollSpanStyle.height = "100%";
                 this.scrollSpanStyle.overflowX = "scroll";
+                this.scrollSpanStyle.paddingBottom = "18px";
                 this.setIsHorizontal = true;
             }else{
                 this.scrollSpanStyle.height = "100%";
                 this.scrollSpanStyle.overflowX = "hidden";
+                this.scrollSpanStyle.paddingBottom = "0px";
                 this.setIsHorizontal = false;
             }
         }
@@ -388,12 +399,15 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        cursor: pointer;
         user-select : none;
     }
     .scrollbar-span .scrollbar-content-span{
         position: relative;
     }
+    .scrollbar-content-span .scrollbar-content-scroll{
+        width: calc(100% + 18px);
+    }
+
     .scrollbar-span .scrollbar-bar{
         position: absolute;
         z-index: 10;
@@ -414,12 +428,14 @@
         height: 100%;
         border-radius: 4px;
         background-color: #8c939d;
+        cursor: pointer;
     }
     .scrollbar-vertical .scrollbar-bar-thumb{
         width: 100%;
         height: 0px;
         border-radius: 4px;
         background-color: #8c939d;
+        cursor: pointer;
     }
 
     .vertical-thumb-enter-active, .vertical-thumb-leave-active,

@@ -32,7 +32,7 @@ module.exports = {
         }
     },
     mode : 'development',
-    //mode : 'production',
+    // mode : 'production',
     plugins: [
         new VueLoaderPlugin(),
         new CleanWebpackPlugin(),
